@@ -162,10 +162,41 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _addNewTask("somethingnew");
-        }
+        onPressed: _showAddTaskDialog
       ),
+    );
+  }
+
+  Future<void> _showAddTaskDialog() async {
+    String newTaskTitle = '';
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add New Task'),
+          content: TextField(
+            onChanged: (value) {
+              newTaskTitle = value;
+            },
+            decoration: const InputDecoration(hintText: 'Enter task title'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Add'),
+              onPressed: () {
+                _addNewTask(newTaskTitle);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
