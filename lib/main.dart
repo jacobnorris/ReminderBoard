@@ -68,6 +68,7 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
     Task(title: 'Read for 15 minutes'),
     Task(title: 'Tidy up the kitchen'),
   ];
+  int _crossAxisCount = 2;
 
   @override
   void initState() {
@@ -128,12 +129,27 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daily Reminder Board'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Show a simple dialog to pick 1-10 columns
+              _showGridSettingsDialog();
+            },
+            icon: const Icon(Icons.grid_view)
+          ),
+        ],
       ),
       // The body of the Scaffold is a ListView that displays the tasks.
-      body: ListView.builder(
+      body: GridView.builder(
         // Add some padding around the list.
         padding: const EdgeInsets.all(8.0),
         itemCount: _tasks.length,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: _crossAxisCount,
+            crossAxisSpacing: 8.0,
+            mainAxisSpacing: 8.0,
+            childAspectRatio: _crossAxisCount > 3 ? 1.0 : 2.5 // adjust to make tiles taller or wider
+        ),
         itemBuilder: (context, index) {
           final task = _tasks[index];
           // Each item in the list is a Card for better visual separation.
@@ -195,6 +211,53 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
               },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showGridSettingsDialog() async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        // We use StatefulBuilder so the slider moves smoothly inside the dialog
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Grid Settings'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Columns: $_crossAxisCount'),
+                  Slider(
+                    value: _crossAxisCount.toDouble(),
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    label: _crossAxisCount.toString(),
+                    onChanged: (double value) {
+                      // Update the dialog's local state so the slider moves
+                      setDialogState(() {
+                        _crossAxisCount = value.toInt();
+                      });
+                      // Update the main app state so the grid changes in the background
+                      setState(() {
+                        _crossAxisCount = value.toInt();
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Done'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
