@@ -155,7 +155,7 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
               trailing: Switch(
                 value: task.isCompleted,
                 onChanged: (value) => _toggleTaskCompletion(index, value),
-                activeColor: Colors.teal,
+                activeThumbColor: Colors.teal,
               ),
             ),
           );
