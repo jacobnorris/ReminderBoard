@@ -35,18 +35,12 @@ class Task {
 
   // Factory constructor to create a Task from a map (used for decoding from JSON).
   factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(
-      title: map['title'],
-      isCompleted: map['isCompleted'],
-    );
+    return Task(title: map['title'], isCompleted: map['isCompleted']);
   }
 
   // Method to convert a Task instance to a map (used for encoding to JSON).
   Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'isCompleted': isCompleted,
-    };
+    return {'title': title, 'isCompleted': isCompleted};
   }
 }
 
@@ -96,8 +90,9 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
   Future<void> _saveTasksState() async {
     final prefs = await SharedPreferences.getInstance();
     // Convert the list of Task objects to a list of maps.
-    final List<Map<String, dynamic>> tasksList =
-    _tasks.map((task) => task.toMap()).toList();
+    final List<Map<String, dynamic>> tasksList = _tasks
+        .map((task) => task.toMap())
+        .toList();
     // Encode the list of maps into a JSON string.
     final String tasksJson = jsonEncode(tasksList);
     // Store the JSON string.
@@ -124,6 +119,43 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
     _saveTasksState();
   }
 
+  Future<void> _deleteTask(int index) async {
+    setState(() {
+      _tasks.removeAt(index);
+    });
+    await _saveTasksState();
+  }
+
+  Future<void> _showDeleteConfirmationDialog(int index) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Delete Task?"),
+          content: Text(
+            'Are you sure you want to delete "${_tasks[index].title}"?',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteTask(index);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +167,7 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
               // Show a simple dialog to pick 1-10 columns
               _showGridSettingsDialog();
             },
-            icon: const Icon(Icons.grid_view)
+            icon: const Icon(Icons.grid_view),
           ),
         ],
       ),
@@ -145,41 +177,48 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
         padding: const EdgeInsets.all(8.0),
         itemCount: _tasks.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: _crossAxisCount,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
-            childAspectRatio: _crossAxisCount > 3 ? 1.0 : 2.5 // adjust to make tiles taller or wider
+          crossAxisCount: _crossAxisCount,
+          crossAxisSpacing: 8.0,
+          mainAxisSpacing: 8.0,
+          childAspectRatio: _crossAxisCount > 3
+              ? 1.0
+              : 2.5, // adjust to make tiles taller or wider
         ),
         itemBuilder: (context, index) {
           final task = _tasks[index];
           // Each item in the list is a Card for better visual separation.
-          return Card(
-            elevation: 2.0,
-            margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-            child: ListTile(
-              // The title of the list tile is the task's title.
-              title: Text(
-                task.title,
-                style: TextStyle(
-                  // Visually indicate completion with a line-through style.
-                  decoration: task.isCompleted
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
-                ),
+          return GestureDetector(
+            onLongPress: () => _showDeleteConfirmationDialog(index),
+            onSecondaryTap: () => _showDeleteConfirmationDialog(index),
+            child: Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.symmetric(
+                vertical: 4.0,
+                horizontal: 8.0,
               ),
-              // The trailing widget is the switch to mark the task as complete.
-              trailing: Switch(
-                value: task.isCompleted,
-                onChanged: (value) => _toggleTaskCompletion(index, value),
-                activeThumbColor: Colors.teal,
+              child: ListTile(
+                // The title of the list tile is the task's title.
+                title: Text(
+                  task.title,
+                  style: TextStyle(
+                    // Visually indicate completion with a line-through style.
+                    decoration: task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
+                ),
+                // The trailing widget is the switch to mark the task as complete.
+                trailing: Switch(
+                  value: task.isCompleted,
+                  onChanged: (value) => _toggleTaskCompletion(index, value),
+                  activeThumbColor: Colors.teal,
+                ),
               ),
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTaskDialog
-      ),
+      floatingActionButton: FloatingActionButton(onPressed: _showAddTaskDialog),
     );
   }
 
