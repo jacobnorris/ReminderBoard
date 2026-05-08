@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import org.json.JSONArray
 
 class ReminderWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
@@ -19,33 +20,40 @@ class ReminderWidgetProvider : AppWidgetProvider() {
 
         // Load shared preferences to get reminder data:
         val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
-        val tasksJson = prefs.getString("flutter.tasks", "[]");
-        val tasks = if (tasksJson != null && tasksJson.isNotEmpty()) {
-            // Parse the JSON string to a list of tasks
-            // Assuming you have a method to parse JSON to a List<String>
-            parseTasksFromJson(tasksJson)
-        } else {
-            emptyList<String>()
-        }
+        val tasksJson = prefs.getString("flutter.tasks", "[]") ?: "[]"
+        val tasks = parseTasksFromJson(tasksJson)
+
         // Set the text for the widget
-        val tasksText = tasks.joinToString("\n")
-        views.setTextViewText(R.id.widget_text, tasksText)
-        // Set the widget layout
-        views.setInt(R.id.widget_layout, "setBackgroundResource", R.drawable.widget_background)
-        // Set the widget title
+        val displayText = if (tasks.isEmpty()) "No tasks yet." else tasks.joinToString("\n")
         views.setTextViewText(R.id.widget_title, "Reminder Board")
-        // Set the widget title color
-        views.setTextColor(R.id.widget_title, context.getColor(R.color.widget_title_color))
-        // Set the widget text color
-        views.setTextColor(R.id.widget_text, context.getColor(R.color.widget_text_color))
+        views.setTextViewText(R.id.widget_text, displayText)
 
-        // Set up the intent that starts the ReminderActivity
-        val intent = Intent(context, ReminderActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
+        // Tapping the widget opens the ReminderActivity
+        val intent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         views.setOnClickPendingIntent(R.id.widget_layout, pendingIntent)
 
-        // Update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views)
+    }
+
+    private fun parseTasksFromJson(json: String): List<String> {
+        val result = mutableListOf<String>()
+        try {
+            val array = JSONArray(json)
+            for (i in 0 until array.length()) {
+                val obj = array.getJSONObject(i)
+                val title = obj.getString("title")
+                val isCompleted = obj.optBoolean("isCompleted", false)
+                // Use a checkmark for done tasks and a bullet for pending ones.
+                val prefix = if (isCompleted) "✓ " else "• "
+                result.add("$prefix$title")
+            }
+        } catch (e: Exception) {
+            result.add("Could not load tasks")
+        }
+        return result
     }
 }
