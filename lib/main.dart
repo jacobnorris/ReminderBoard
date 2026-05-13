@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:home_widget/home_widget.dart';
+import 'dart:io';
 
 import './screens/reminder_board_screen.dart';
 
 // The main entry point for the Flutter application.
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isIOS || Platform.isMacOS || Platform.isAndroid) {
+    await HomeWidget.setAppGroupId('com.example.reminder_board');
+  }
+
   runApp(const ReminderBoardApp());
 }
 

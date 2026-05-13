@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:home_widget/home_widget.dart';
 
 import '../models/task.dart';
 
@@ -30,5 +31,8 @@ class TaskStorageService {
     final String tasksJson = jsonEncode(tasksList);
     // Store the JSON string.
     await prefs.setString('tasks', tasksJson);
+
+    // Tell Android widget to redraw immediately
+    await HomeWidget.updateWidget(androidName: "ReminderWidgetProvider");
   }
 }
