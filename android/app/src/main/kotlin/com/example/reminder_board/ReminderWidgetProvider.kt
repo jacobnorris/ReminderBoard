@@ -1,4 +1,4 @@
-package com.example.reminder_board
+package com.speaksoft.reminderboard
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager

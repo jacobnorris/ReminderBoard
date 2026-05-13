@@ -9,7 +9,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (Platform.isIOS || Platform.isMacOS || Platform.isAndroid) {
-    await HomeWidget.setAppGroupId('com.example.reminder_board');
+    await HomeWidget.setAppGroupId('com.speaksoft.reminderboard');
   }
 
   runApp(const ReminderBoardApp());

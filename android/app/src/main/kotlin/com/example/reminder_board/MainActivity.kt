@@ -1,4 +1,4 @@
-package com.example.reminder_board
+package com.speaksoft.reminderboard
 
 import io.flutter.embedding.android.FlutterActivity
 
