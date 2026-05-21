@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/task.dart';
+import '../services/home_widget_service.dart';
 import '../services/task_storage_service.dart';
 import '../widgets/task_card.dart';
 
@@ -40,6 +41,7 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
       });
       // Save the updated tasks state.
       await TaskStorageService.saveTasks(_tasks);
+      await HomeWidgetService.updateWidget();
     }
   }
 
@@ -50,6 +52,7 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
     });
     // Save the tasks every time a switch is toggled.
     TaskStorageService.saveTasks(_tasks);
+    HomeWidgetService.updateWidget();
   }
 
   Future<void> _deleteTask(int index) async {
@@ -57,6 +60,7 @@ class _ReminderBoardScreenState extends State<ReminderBoardScreen> {
       _tasks.removeAt(index);
     });
     await TaskStorageService.saveTasks(_tasks);
+    await HomeWidgetService.updateWidget();
   }
 
   Future<void> _showDeleteConfirmationDialog(int index) async {
